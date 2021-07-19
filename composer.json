@@ -16,7 +16,8 @@
         "tymon/jwt-auth": "^1.0",
         "illuminate/mail": "^8.50",
         "illuminate/routing": "^8.50",
-        "maxsky/lumen-app-key-generator": "^1.0"        
+        "maxsky/lumen-app-key-generator": "^1.0",
+        "urameshibr/lumen-form-request": "^1.5"     
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

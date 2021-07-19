@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use Log;
 use Closure;
+use App\Helpers\HttpStatus as Status;
 use Illuminate\Contracts\Auth\Factory as Auth;
 
 class Authenticate
@@ -35,8 +37,15 @@ class Authenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
+        app()->request->headers->set('Authorization', app()->request->header('Authorization-token'));
+
         if ($this->auth->guard($guard)->guest()) {
-            return response('Unauthorized.', 401);
+            Log::info('Unauthorized access attempt from: ' . $request->ip());
+
+            return response()->api([
+                'status' => Status::UNAUTHORIZED,
+                'message' => 'Unauthorized.',
+            ]);
         }
 
         return $next($request);

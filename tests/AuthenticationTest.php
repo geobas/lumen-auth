@@ -3,11 +3,11 @@
 use App\Models\User;
 use App\Mail\ResetPassword;
 use App\Models\PasswordReset;
+use App\Services\AuthService;
 use App\Http\Requests\UserRequest;
 use App\Mail\RegisterConfirmation;
 use Illuminate\Support\Facades\Mail;
 use App\Helpers\HttpStatus as Status;
-use App\Http\Controllers\AuthController;
 use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 
 class AuthenticationTest extends TestCase
@@ -53,7 +53,7 @@ class AuthenticationTest extends TestCase
              	'status' => Status::CREATED,
              ])
              ->seeJson([
-             	'message' => AuthController::MESSAGES['REGISTER.SUCCESS'],
+             	'message' => AuthService::MESSAGES['REGISTER.SUCCESS'],
              ]);
 
         Mail::assertSent(RegisterConfirmation::class, function ($mail) {
@@ -72,7 +72,7 @@ class AuthenticationTest extends TestCase
              ->seeStatusCode(Status::OK)
              ->seeJson([
                 'status' => Status::UNAUTHORIZED,
-                'message' => AuthController::MESSAGES['LOGIN.NOTACTIVATED'],
+                'message' => AuthService::MESSAGES['LOGIN.NOTACTIVATED'],
              ]);
     }
 
@@ -90,7 +90,7 @@ class AuthenticationTest extends TestCase
                 'message'
              ])
              ->seeJson([
-                'message' => AuthController::MESSAGES['CONFIRM.SUCCESS'],
+                'message' => AuthService::MESSAGES['CONFIRM.SUCCESS'],
              ]);
 
         Mail::assertNothingSent();
@@ -104,7 +104,7 @@ class AuthenticationTest extends TestCase
         $this->get('/auth/confirm/registration/el2Sn3fjibPI4G8k30eFnFfXthBIY7APlRuvsctHnNHdtJuHsFNLHcfi0BiTjI6Y')
              ->seeStatusCode(Status::OK)
              ->seeJson([
-                'message' => AuthController::MESSAGES['CONFIRM.ERROR'],
+                'message' => AuthService::MESSAGES['CONFIRM.ERROR'],
              ]);
     }
 
@@ -156,7 +156,7 @@ class AuthenticationTest extends TestCase
                 'message',
              ])
              ->seeJson([
-                'message' => AuthController::MESSAGES['LOGOUT.SUCCESS'],
+                'message' => AuthService::MESSAGES['LOGOUT.SUCCESS'],
              ]);
 
         Mail::assertNothingSent();
@@ -165,7 +165,7 @@ class AuthenticationTest extends TestCase
              ->seeStatusCode(Status::OK)
              ->seeJson([
                 'status' => Status::UNAUTHORIZED,
-                'message' => AuthController::MESSAGES['LOGIN.UNAUTHORIZED'],
+                'message' => AuthService::MESSAGES['LOGIN.UNAUTHORIZED'],
              ]);
     }
 
@@ -205,7 +205,7 @@ class AuthenticationTest extends TestCase
              ->seeStatusCode(Status::INTERNAL_SERVER_ERROR)
              ->seeJson([
                 'status' => Status::UNAUTHORIZED,
-                'message' => AuthController::MESSAGES['LOGIN.UNAUTHORIZED'],
+                'message' => AuthService::MESSAGES['LOGIN.UNAUTHORIZED'],
              ]);
     }
 
@@ -223,7 +223,7 @@ class AuthenticationTest extends TestCase
                 'message',
              ])
              ->seeJson([
-                'message' => AuthController::MESSAGES['RESET.SUCCESS'],
+                'message' => AuthService::MESSAGES['RESET.SUCCESS'],
              ]);
 
         Mail::assertSent(ResetPassword::class, function ($mail) {
@@ -238,13 +238,13 @@ class AuthenticationTest extends TestCase
         $this->get('/auth/password/reset/' . $user->username)
              ->seeStatusCode(Status::OK)
              ->seeJson([
-                'message' => AuthController::MESSAGES['RESET.ERROR'],
+                'message' => AuthService::MESSAGES['RESET.ERROR'],
              ]);
 
         $this->get('/auth/password/reset/unknown@test.gr')
              ->seeStatusCode(Status::OK)
              ->seeJson([
-                'message' => AuthController::MESSAGES['LOGIN.UNKNOWN'],
+                'message' => AuthService::MESSAGES['LOGIN.UNKNOWN'],
              ]);
     }
 
@@ -262,7 +262,7 @@ class AuthenticationTest extends TestCase
                 'message',
              ])
              ->seeJson([
-                'message' => AuthController::MESSAGES['CHANGE.SUCCESS'],
+                'message' => AuthService::MESSAGES['CHANGE.SUCCESS'],
              ]);
 
         Mail::assertNothingSent();
@@ -295,7 +295,7 @@ class AuthenticationTest extends TestCase
         $this->post('/auth/change/password', ['password' => 12345, 'password_confirmation' => 12345, 'token' => $passwordReset->token])
              ->seeStatusCode(Status::OK)
              ->seeJson([
-                'message' => AuthController::MESSAGES['CHANGE.UNKNOWN'],
+                'message' => AuthService::MESSAGES['CHANGE.UNKNOWN'],
              ]);
 
         $this->post('/auth/change/password', ['password' => 12345, 'token' => $passwordReset->token])

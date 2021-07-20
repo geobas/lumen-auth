@@ -11,8 +11,9 @@ use Illuminate\Http\JsonResponse;
 use App\Mail\RegisterConfirmation;
 use Illuminate\Support\Facades\Mail;
 use App\Helpers\HttpStatus as Status;
+use App\Contracts\AuthServiceInterface;
 
-class AuthService
+class AuthService implements AuthServiceInterface
 {
     /**
      * Authentication messages.
@@ -52,12 +53,6 @@ class AuthService
         $this->user = $user;
     }
 
-    /**
-     * Register a new user.
-     * 
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function register(Request $request): JsonResponse
     {
         $userData = $request->only(['username', 'name']) + ['token' => $this->user->new($request)->email_verification_token];
@@ -72,12 +67,6 @@ class AuthService
         ]);
     }
 
-    /**
-     * Login a user.
-     * 
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function login(Request $request): JsonResponse
     {
         if ($user = $this->user->fetch($request->username)->first()) {
@@ -114,11 +103,6 @@ class AuthService
         }
     }
 
-    /**
-     * Logout a user.
-     * 
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function logout(): JsonResponse
     {
         Log::info(self::MESSAGES['LOGOUT.SUCCESS'] . ' : ' . auth()->user()->username);
@@ -131,22 +115,11 @@ class AuthService
         ]);
     }
 
-    /**
-     * Refresh a token.
-     * 
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function refresh(): JsonResponse
     {
         return $this->createNewToken(auth()->refresh());
     }
 
-    /**
-     * Confirm registration of a User.
-     * 
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function confirmRegistration(Request $request): JsonResponse
     {
         if (!empty($request->token)) {
@@ -172,13 +145,6 @@ class AuthService
         }
     }
 
-    /**
-     * Send an email with reset password details.
-     * 
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\PasswordReset  $passwordReset
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function sendPasswordReset(Request $request, PasswordReset $passwordReset): JsonResponse
     {
         if (!empty($request->username) && $user = $this->user->fetch($request->username)->first()) {
@@ -222,13 +188,6 @@ class AuthService
         }
     }
 
-    /**
-     * Change User password.
-     * 
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\PasswordReset  $passwordReset
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function changePassword(Request $request, PasswordReset $passwordReset): JsonResponse
     {
         if (!empty($request->token)) {

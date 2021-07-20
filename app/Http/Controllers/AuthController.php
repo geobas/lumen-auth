@@ -7,21 +7,35 @@ use Throwable;
 use App\Mail\ResetPassword;
 use Illuminate\Http\Request;
 use App\Models\PasswordReset;
-use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\UserRequest;
 use Illuminate\Database\QueryException;
+use App\Contracts\AuthServiceInterface;
 use App\Exceptions\DuplicateEntryException;
 
 class AuthController extends Controller
 {
     /**
+     * Instance of authentication service.
+     *
+     * @var \App\Services\AuthService
+     */
+    public $service;
+
+    /**
+     * Instance of PasswordReset model.
+     *
+     * @var \App\Models\PasswordReset
+     */
+    public $passwordReset;
+
+    /**
      * Create a new controller instance.
      *
-     * @param \App\Services\AuthService  $service
+     * @param \App\Contracts\AuthServiceInterface  $service
      * @param \App\Models\PasswordReset  $passwordReset
      */
-    public function __construct(AuthService $service, PasswordReset $passwordReset)
+    public function __construct(AuthServiceInterface $service, PasswordReset $passwordReset)
     {
         $this->middleware('auth:api', ['only' => ['logout', 'refresh']]);
 

@@ -38,7 +38,7 @@ class PasswordReset extends Model
     public function scopeGetToken(Builder $query, Request $request): Builder
     {
         return $query->select('token')
-    				 ->where('username', $request->username);
+                     ->where('username', $request->username);
     }
 
     /**
@@ -57,16 +57,16 @@ class PasswordReset extends Model
     }
 
     /**
-     * Return the username for a specific reset token.
+     * Return information for a specific reset token.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeGetUsername(Builder $query, Request $request): Builder
+    public function scopeGetTokenInfo(Builder $query, Request $request): Builder
     {
-        return $query->select('username')
-    				 ->where('token', $request->token);
+        return $query->select('id', 'username', 'created_at')
+                     ->where('token', $request->token);
     }
 
     /**
@@ -79,6 +79,6 @@ class PasswordReset extends Model
     public function scopeDeleteToken(Builder $query, User $user): int
     {
         return $query->where('username', $user->username)
-    				 ->delete();
+                     ->delete();
     }
 }

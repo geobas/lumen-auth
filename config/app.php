@@ -24,4 +24,9 @@ return [
     'registration_url' => env('REGISTRATION_URL'),
 
     'reset_password_url' => env('RESET_PASSWORD_URL'),
+
+    'registration_token_lifetime' => env('REGISTRATION_TOKEN_LIFETIME', 900),
+
+    'reset_password_token_lifetime' => env('RESET_PASSWORD_TOKEN_LIFETIME', 900),
+
 ];

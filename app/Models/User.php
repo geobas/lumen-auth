@@ -100,7 +100,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     public function scopeFetch(Builder $query, string $option): Builder
     {
-        return $query->select(['id', 'username', 'name', 'email_verified', 'email_verified_at'])
+        return $query->select(['id', 'username', 'name', 'email_verified', 'email_verified_at', 'created_at'])
                      ->where('username', $option)
                      ->orWhere('email_verification_token', $option);
     }

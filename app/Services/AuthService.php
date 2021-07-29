@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Log;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Mail\ResetPassword;
 use Illuminate\Http\Request;
@@ -22,6 +23,7 @@ class AuthService implements AuthServiceInterface
      */
     const MESSAGES = [
         'REGISTER.SUCCESS' => 'User was registered successfully.',
+        'REGISTER.TOKEN.EXPIRED' => 'Registration token has expired.',
         'LOGIN.SUCCESS' => 'User logged in successfully.',
         'LOGIN.UNAUTHORIZED' => 'Unauthorized.',
         'LOGIN.NOTACTIVATED' => 'Account is not yet activated.',
@@ -34,6 +36,7 @@ class AuthService implements AuthServiceInterface
         'CHANGE.SUCCESS' => 'Password was changed successfully.',
         'CHANGE.UNKNOWN' => 'Unknown token.',
         'CHANGE.MISSING' => 'Reset token is missing.',
+        'CHANGE.TOKEN.EXPIRED' => 'Password reset token has expired.',
     ];
 
     /**
@@ -125,6 +128,18 @@ class AuthService implements AuthServiceInterface
         if (!empty($request->token)) {
             $user = $this->user->fetch($request->token)->first();
 
+            if (!empty($user)
+                && $user->created_at->diffInSeconds(Carbon::now()) > (int) config('app.registration_token_lifetime')) {
+                Log::info(self::MESSAGES['REGISTER.TOKEN.EXPIRED'] . ' : ' . $request->token);
+
+                $user->delete();
+
+                return response()->api([
+                    'status' => Status::BAD_REQUEST,
+                    'message' => self::MESSAGES['REGISTER.TOKEN.EXPIRED'],
+                ]);
+            }
+
             if (!empty($user)) {
                 $user->confirmRegistration();
 
@@ -191,7 +206,19 @@ class AuthService implements AuthServiceInterface
     public function changePassword(Request $request, PasswordReset $passwordReset): JsonResponse
     {
         if (!empty($request->token)) {
-            $tokenData = $passwordReset->getUsername($request)->first();
+            $tokenData = $passwordReset->getTokenInfo($request)->first();
+
+            if (!empty($tokenData) 
+                && Carbon::parse($tokenData->created_at)->diffInSeconds(Carbon::now()) > (int) config('app.reset_password_token_lifetime')) {
+                Log::info(self::MESSAGES['CHANGE.TOKEN.EXPIRED'] . ' : ' . $request->token);
+
+                $tokenData->delete();
+
+                return response()->api([
+                    'status' => Status::BAD_REQUEST,
+                    'message' => self::MESSAGES['CHANGE.TOKEN.EXPIRED'],
+                ]);
+            }            
 
             if (!empty($tokenData)) {
                 $user = $this->user->fetch($tokenData->username)->first();
